@@ -10,9 +10,9 @@ import comparators.ComparatorNetProfit;
 
 public class Solution {
 	
-	Set<Oggetto> itemSet;
-	Double objFunction;
-	Integer capMax;
+	private Set<Oggetto> itemSet;
+	private Double objFunction;
+	private Integer capMax;
 	
 	public Solution(Integer capMax) {
 		this.itemSet = new HashSet<>();
@@ -20,6 +20,11 @@ public class Solution {
 		this.capMax = capMax;
 	}
 	
+	public Solution(Solution previous) {
+		this.itemSet = previous.getItemSet();
+		this.objFunction = previous.getObjFunction();
+		this.capMax = previous.getCapMax();
+	}
 	public Set<Oggetto> getItemSet(){
 		return this.itemSet;
 	}
@@ -58,6 +63,21 @@ public class Solution {
 		this.objFunction += item.getProf();
 		this.objFunction -= calcolaForfeitInserimento(item);
 		item.setNetProf(item.getProf()-penalty);
+	}
+	
+	public void removeItem(Oggetto o) {
+		Double gain = 0.0;
+		for(Oggetto alreadyInserted : this.itemSet) {
+			if(!alreadyInserted.equals(o)) {
+				alreadyInserted.setNetProf(alreadyInserted.getNetProf() + alreadyInserted.getPenalitaCon(o));
+				gain += alreadyInserted.getPenalitaCon(o);
+			}
+		}
+		this.itemSet.remove(o);
+		this.objFunction += gain;
+		this.objFunction -= o.getProf();
+		
+		o.setNetProf(0.0);
 	}
 	
 	private Double calcolaForfeitInserimento(Oggetto item) {

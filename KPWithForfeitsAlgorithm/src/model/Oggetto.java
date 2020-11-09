@@ -72,10 +72,7 @@ public class Oggetto {
 
 	@Override
 	public String toString() {
-		String result =  "X"+this.id+" p="+this.prof+" w="+this.peso+"\nConflitti:"+this.forfeits.size()+"\n";
-		for(Integer i : this.forfeits.keySet()) {
-			result += "X"+i+" penalità:"+this.forfeits.get(i)+"\n";
-		}
+		String result =  "X"+this.id+" p="+this.prof+" w="+this.peso;
 		return result;
 	}
 	
