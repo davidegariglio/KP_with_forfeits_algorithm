@@ -53,51 +53,44 @@ public class Model {
 		this.end = start + (5*60*1000);
 		//Init of current solution as starting one
 		this.opt = current;
-		// Exploit all computational time
-		int i = 0;
+		
 		
 		// TODO: Mohamed, prepare yourself!!
 		while(System.currentTimeMillis() < end) {
-			boolean found = false;
-			List<Oggetto> leaving = current.getworstItems();
-			/*
-			if(leaving.isEmpty()) {
-				this.opt = new Solution(current);
-				System.out.println(opt.getObjFunction()+"\n"+opt.getItemSet());
-				return;
-			}
-			*/
-			Solution candidateSolution = new Solution(current);
-			candidateSolution.removeItem(leaving.get(i));
-			System.out.println(current+"\n"+current.getObjFunction());
-			System.out.println("Leaving "+leaving.get(i)+ leaving.get(i).getNetProf());
-			
-			List<Oggetto> candidates = cleanCandidates(this.initialCandidates, candidateSolution.getResidualCapacity());
-			candidates.removeAll(leaving);
-			
-			//Da aggiustare
-			for(Oggetto o : candidates) {
-				candidateSolution.addItem(o);
-
-				if(candidateSolution.getObjFunction() > current.getObjFunction()) {
-					current = new Solution(candidateSolution);
-					System.out.println("Entering "+o);
-					System.out.println("New obj. = "+candidateSolution.getObjFunction());
-					System.out.println(candidateSolution);
-					System.out.println(candidateSolution.getUsedCapacity());
-					found = true;
+			List<Oggetto> candidates = new ArrayList<>(this.initialCandidates);
+			candidates.removeAll(current.getItemSet());
+			//Oggetti ordinati per profitto netto crescente
+			List<Oggetto> leavingItems = new ArrayList<>(current.getworstItems());
+			for(Oggetto candidateLeaving : leavingItems) {
+				//Re inizializzo leavingItems per iterazioni successive ala prima
+				leavingItems = new ArrayList<>(current.getworstItems());
+				Solution improved = new Solution(current);
+				improved.removeItem(candidateLeaving);
+				//Ora provo a inserire elementi
+				//scremo tutti i candidati che ci stanno nella nuova possibile soluzione
+				candidates = new ArrayList<>(this.cleanCandidates(candidates, improved.getResidualCapacity()));
+				for(Oggetto candidateEntering : candidates) {
+					//Aggiunta di tutti quelli che ci stanno
+					if(candidateEntering.getPeso() <= improved.getResidualCapacity()) {
+						improved.addItem(candidateEntering);
+					}
+				}
+				if(improved.getObjFunction() > current.getObjFunction()) {
+					current = new Solution(improved);
+					System.out.println("New solution found!");
+					System.out.println("New OBJ: = "+ current.getObjFunction());
+					System.out.println("#Items = " + current.getItemSet().size());
+					System.out.println("Items: " + current.getItemSet());
+					System.out.println("Residual capacity = " + current.getResidualCapacity());
 					break;
 				}
 				else {
-					candidateSolution.removeItem(o);
-					System.out.println("Candidate not improving obj...");
+					//System.out.println("This iteration has not provided any better solution...");
 				}
-				
 			}
-			//finito il for, devo aggiornare i per provare a rimuovere il secondo (o successivi)peggior item
-			if(!found && i < leaving.size()) i++;
-
+			System.out.println("New swapping!");
 		}
+		System.out.println("TIME FINISHED!");
 	}
 
 	private void sortItemsByAVGPenalty() {

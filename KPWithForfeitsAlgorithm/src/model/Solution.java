@@ -88,7 +88,7 @@ public class Solution {
 		}
 		return result;
 	}
-
+	
 	@Override
 	public String toString() {
 		return this.itemSet.toString();
