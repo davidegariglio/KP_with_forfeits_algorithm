@@ -54,7 +54,6 @@ public class Model {
 		//Init of current solution as starting one
 		this.opt = current;
 		
-		
 		// TODO: Mohamed, prepare yourself!!
 		while(System.currentTimeMillis() < end) {
 			List<Oggetto> candidates = new ArrayList<>(this.initialCandidates);
