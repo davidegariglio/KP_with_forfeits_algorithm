@@ -56,7 +56,7 @@ public class Model {
 		// Exploit all computational time
 		int i = 0;
 		
-		// TODO: Mohamed, prepare yourself!!!
+		// TODO: Mohamed, prepare yourself!!
 		while(System.currentTimeMillis() < end) {
 			boolean found = false;
 			List<Oggetto> leaving = current.getworstItems();
