@@ -19,6 +19,7 @@ public class Model {
 	private Map<Integer, Oggetto> itemMap;
 	private long start;
 	private long end;
+	private int tabuSize = 125;
 	
 	private List<Oggetto> itemSortedByAVGPenalty;
 	
@@ -26,9 +27,12 @@ public class Model {
 
 	private Solution opt;
 	
+	private List<Oggetto> tabuList;
+	
 	public Model() {
 		this.itemMap = new HashMap<>();
-	}
+		this.tabuList = new ArrayList<>();
+		}
 	
 	public void execute(String fileName) {
 		readInput(fileName);
@@ -50,12 +54,12 @@ public class Model {
 		
 		Solution current = buildInitialSolution(this.capacity, this.initialCandidates);
 		this.start = System.currentTimeMillis();
-		this.end = start + (5*60*1000);
+		this.end = start + (180*1000);
 		//Init of current solution as starting one
 		this.opt = current;
 		
-		// TODO: Mohamed, prepare yourself!!
 		while(System.currentTimeMillis() < end) {
+			boolean removed = false;
 			List<Oggetto> candidates = new ArrayList<>(this.initialCandidates);
 			candidates.removeAll(current.getItemSet());
 			//Oggetti ordinati per profitto netto crescente
@@ -65,32 +69,52 @@ public class Model {
 				leavingItems = new ArrayList<>(current.getworstItems());
 				Solution improved = new Solution(current);
 				improved.removeItem(candidateLeaving);
+				
+				if(!this.tabuList.contains(candidateLeaving)) {
+					
+					if(this.tabuList.size()<this.tabuSize) {
+						this.tabuList.add(candidateLeaving);
+						removed = true;
+					}
+					else {
+						//FIFO approach
+						this.tabuList.remove(0);
+						this.tabuList.add(candidateLeaving);
+						removed = true;
+					}
+				
+				}
+				
 				//Ora provo a inserire elementi
 				//scremo tutti i candidati che ci stanno nella nuova possibile soluzione
 				candidates = new ArrayList<>(this.cleanCandidates(candidates, improved.getResidualCapacity()));
 				for(Oggetto candidateEntering : candidates) {
 					//Aggiunta di tutti quelli che ci stanno
-					if(candidateEntering.getPeso() <= improved.getResidualCapacity()) {
+					if(!this.tabuList.contains(candidateEntering) && candidateEntering.getPeso() <= improved.getResidualCapacity()) {
 						improved.addItem(candidateEntering);
 					}
 				}
-				if(improved.getObjFunction() > current.getObjFunction()) {
-					current = new Solution(improved);
+				if(improved.getObjFunction() > opt.getObjFunction()) {
+					opt = new Solution(improved);
+					current = new Solution(opt);
 					System.out.println("New solution found!");
+					System.out.println("Leaving:"+ candidateLeaving);
 					System.out.println("New OBJ: = "+ current.getObjFunction());
 					System.out.println("#Items = " + current.getItemSet().size());
 					System.out.println("Items: " + current.getItemSet());
 					System.out.println("Residual capacity = " + current.getResidualCapacity());
 					break;
 				}
-				else {
-					//System.out.println("This iteration has not provided any better solution...");
-				}
+				current = new Solution(improved);
+				if(removed) break;
 			}
 			System.out.println("New swapping!");
 		}
 		System.out.println("TIME FINISHED!");
-	}
+		System.out.println("Obj.= "+opt.getObjFunction());
+		System.out.println(opt);
+		System.out.println("Res capacity = "+opt.getResidualCapacity());
+ 	}
 
 	private void sortItemsByAVGPenalty() {
 		this.itemSortedByAVGPenalty = new ArrayList<>(itemMap.values());

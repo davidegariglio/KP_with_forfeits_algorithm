@@ -61,7 +61,7 @@ public class Solution {
 		}
 		this.itemSet.add(item);
 		this.objFunction += item.getProf();
-		this.objFunction -= calcolaForfeitInserimento(item);
+		this.objFunction -= penalty;
 		item.setNetProf(item.getProf()-penalty);
 	}
 	
@@ -78,15 +78,6 @@ public class Solution {
 		this.objFunction -= o.getProf();
 		
 		o.setNetProf(0.0);
-	}
-	
-	private Double calcolaForfeitInserimento(Oggetto item) {
-		Double result = 0.0;
-		for(Oggetto alreadyInserted : this.itemSet) {
-				// getPenalit‡Con() ritorna zero e non c'Ë conflitto
-				result += item.getPenalitaCon(alreadyInserted);
-		}
-		return result;
 	}
 	
 	@Override
